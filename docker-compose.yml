@@ -2,6 +2,8 @@ services:
   front:
     build:
       context: .
+    container_name: "tontastic-front"
+    restart: on-failure    
     ports:
       - 127.0.0.1:8080:8080
     command: ["npm", "run", "dev"]
@@ -9,7 +11,29 @@ services:
       - ./src/index.html:/app/index.html
       - ./src:/app/src
       - ./public:/app/public
+      - ./dist:/app/dist
+
+  bot:
+    build:
+      context: bot    
+    container_name: "tontastic-bot"
+    restart: on-failure
+    env_file:
+      - .env
+    depends_on:
+      - redis
+    volumes:
+      - ./:/usr/src/bot
+
+  redis:
+    image: redis:alpine
+    restart: always
+    volumes:
+      - tontastic-redis:/data
 
 networks:
   default:
     name: tontastic
+
+volumes:
+  tontastic-redis:
