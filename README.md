@@ -2,7 +2,7 @@
 
 TonTastic is an project showcasing the integration with the TonTeeTon oracle.
 
-## Decelopment Setup
+## Development Setup
 
 1. Clone the repository
 ```bash
