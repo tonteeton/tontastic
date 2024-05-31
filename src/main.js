@@ -4,9 +4,7 @@ window.Telegram.WebApp.expand();
 Telegram.WebApp.setHeaderColor("secondary_bg_color");
 
 import { Boot } from './scenes/Boot';
-import { Game } from './scenes/Game';
-import { GameOver } from './scenes/GameOver';
-import { MainMenu } from './scenes/MainMenu';
+import { MainScene } from './scenes/MainScene';
 import { Preloader } from './scenes/Preloader';
 
 //  Find out more information about the Game Config at:
@@ -36,14 +34,12 @@ const config = {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH,
         width: w,
-        height: h,        
+        height: h,
     },
     scene: [
         Boot,
         Preloader,
-        MainMenu,
-        Game,
-        GameOver
+        MainScene,
     ]
 };
 
