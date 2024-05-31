@@ -1,3 +1,8 @@
+// Initialize TWA
+window.Telegram.WebApp.ready();
+window.Telegram.WebApp.expand();
+Telegram.WebApp.setHeaderColor("secondary_bg_color");
+
 import { Boot } from './scenes/Boot';
 import { Game } from './scenes/Game';
 import { GameOver } from './scenes/GameOver';
