@@ -1,0 +1,15 @@
+services:
+  front:
+    build:
+      context: .
+    ports:
+      - 127.0.0.1:8080:8080
+    command: ["npm", "run", "dev"]
+    volumes:
+      - ./src/index.html:/app/index.html
+      - ./src:/app/src
+      - ./public:/app/public
+
+networks:
+  default:
+    name: tontastic
