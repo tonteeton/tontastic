@@ -1,6 +1,7 @@
 import { Scene } from "phaser";
 import { PriceFetcher } from "../PriceFetcher";
 import { Plane } from "../sprites/Plane";
+import { Balloon } from "../sprites/Balloon";
 
 let plane;
 let debugText;
@@ -68,6 +69,8 @@ export class MainScene extends Scene
         debugText = this.add.text(10, 10, '', { fontSize: '16px', fill: '#ffffff' });
         debugText.setScrollFactor(0);
         graphics = this.add.graphics();
+
+        this.setupInput();
     }
 
     update() {
@@ -87,12 +90,20 @@ export class MainScene extends Scene
     setupEvents() {
         let emitter = this.emitter = new Phaser.Events.EventEmitter();
         emitter.on("PRICE", this.priceHandler.bind(this));
+        emitter.on("BALLOON", this.handleBallonPlaced.bind(this));        
     }
 
     setupPhysics() {
         this.planeGroup = this.physics.add.group({   
-            runChildUpdate: true  // Enable obj.update() call 
+            runChildUpdate: true,  // Enable obj.update() call 
         });
+        this.balloonGroup = this.physics.add.group({   
+            runChildUpdate: true,
+        });
+    }
+
+    setupInput() {
+        this.input.on('pointerup', this.addBalloon.bind(this));
     }
 
     priceHandler(data) {
@@ -156,6 +167,25 @@ export class MainScene extends Scene
         }
         previousPoint = targetPoint.clone();
     }
+
+    addBalloon(pointer) {
+        const obj = new Balloon(this, pointer.worldX, pointer.worldY, {
+            "width": plane.displayWidth / 2,
+            "height": plane.displayHeight / 2,
+            "centerY": plane.y
+        });
+        this.balloonGroup.add(obj);
+        console.log("target coin added", pointer.worldX, pointer.worldY)
+    }
+
+    handleBallonPlaced(obj) {
+        this.physics.add.collider(
+            plane, obj, (plane, balloon) => {
+                balloon.destroy();
+            }
+        );
+    }
+    
 
 }
 
