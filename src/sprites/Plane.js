@@ -2,7 +2,6 @@ export class Plane extends Phaser.Physics.Arcade.Sprite {
 
     constructor(scene, x, y, config) {
         super(scene, x, y, "plane");
-        scene.physics.add.sprite(x, y, 'plane');
 
         scene.add.existing(this);
         scene.physics.add.existing(this);
