@@ -12,7 +12,7 @@ export class Plane extends Phaser.Physics.Arcade.Sprite {
         this.setDepth(config.depth);
     }
 
-    update() {
+    rotateToVelocity() {
         const velocityAngle = Math.atan2(this.body.velocity.y, this.body.velocity.x);
         // Convert velocity angle from radians to degrees
         const velocityAngleDegrees = Phaser.Math.RadToDeg(velocityAngle);
