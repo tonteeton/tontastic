@@ -2,6 +2,7 @@ import { Scene } from "phaser";
 import { PriceFetcher } from "../PriceFetcher";
 import { Plane } from "../sprites/Plane";
 import { Balloon } from "../sprites/Balloon";
+import { Background } from "../Background";
 
 let plane;
 let debugText;
@@ -25,6 +26,8 @@ let targetRotation = 0;
 const maxPoints = 10;
 let planetGravity = 50;
 let delta = 1000;
+let bgSpeedX = 0.2;
+let bgSpeedY = 0.2;
 
 let defaultPlaneSpeed = 50;
 
@@ -46,6 +49,8 @@ export class MainScene extends Scene
 
         this.setupPhysics();
 
+        this.bg = new Background(this);
+
         plane = this.plane = new Plane(
             this,
             config.width / 2, // x
@@ -57,7 +62,6 @@ export class MainScene extends Scene
             }
         );
         this.planeGroup.add(plane);
-      
 
         const cam =  this.cameras.main;
         cam.startFollow(plane, true, 1, 1);
@@ -76,6 +80,10 @@ export class MainScene extends Scene
     }
 
     update() {
+        this.bg.update(
+            plane.body.deltaX() * bgSpeedX,
+            plane.body.deltaY() * bgSpeedY,
+        );
         if (previousPoints.length > 0) {
 
             if (plane.y < targetPoint.y) {
