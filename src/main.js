@@ -27,7 +27,7 @@ const config = {
         default: "arcade",
         arcade: {
             fps: 60,
-            debug: true,
+            debug: false,
         }
     },        
     scale: {

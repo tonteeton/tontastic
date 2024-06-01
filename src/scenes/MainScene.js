@@ -4,6 +4,8 @@ import { Plane } from "../sprites/Plane";
 import { Balloon } from "../sprites/Balloon";
 import { Background } from "../Background";
 
+let debug = true;
+
 let plane;
 let debugText;
 let graphics;
@@ -46,6 +48,7 @@ export class MainScene extends Scene
 
     create() {
         const config = this.game.config;
+        debug = config.physics?.arcade.debug;
 
         this.setupPhysics();
 
@@ -93,18 +96,20 @@ export class MainScene extends Scene
             } else {
                 plane.rotateToVelocity();
             }
-            
-            debugText.setText([
-                `Plane Position: (${plane.x.toFixed(2)}, ${plane.y.toFixed(2)})`,
-                `Target Point: (${targetPoint.x.toFixed(2)}, ${targetPoint.y.toFixed(2)})`,
-                `Velocity: (${plane.body.velocity.x.toFixed(2)}, ${plane.body.velocity.y.toFixed(2)})`,
-                `VelocityX, VelocityY: (${velocityX?.toFixed(2)}, ${velocityY?.toFixed(2)})`,
-                `Gravity: (${plane.body.gravity.x.toFixed(2)}, ${plane.body.gravity.y.toFixed(2)})`,
-                `Speed: ${speed}`,
-                `Rotation: ${plane.rotation}`,
-                `TimeDiff: ${timeDiff}`,
-                `Price ${priceData?.price}` 
-            ]);
+
+            if (debug) {
+                debugText.setText([
+                    `Plane Position: (${plane.x.toFixed(2)}, ${plane.y.toFixed(2)})`,
+                    `Target Point: (${targetPoint.x.toFixed(2)}, ${targetPoint.y.toFixed(2)})`,
+                    `Velocity: (${plane.body.velocity.x.toFixed(2)}, ${plane.body.velocity.y.toFixed(2)})`,
+                    `VelocityX, VelocityY: (${velocityX?.toFixed(2)}, ${velocityY?.toFixed(2)})`,
+                    `Gravity: (${plane.body.gravity.x.toFixed(2)}, ${plane.body.gravity.y.toFixed(2)})`,
+                    `Speed: ${speed}`,
+                    `Rotation: ${plane.rotation}`,
+                    `TimeDiff: ${timeDiff}`,
+                    `Price ${priceData?.price}` 
+                ]);
+            }
         }
     }
 
@@ -147,6 +152,9 @@ export class MainScene extends Scene
         }
 
         var point = this.add.circle(targetPoint.x, targetPoint.y, 10, 0xff0000);
+        if (!debug) {
+            point.setAlpha(0);
+        }
 
         const duration = delta;
         const distance = Phaser.Math.Distance.Between(plane.x, plane.y, targetPoint.x, targetPoint.y);
@@ -169,12 +177,14 @@ export class MainScene extends Scene
                 totalGravityX += Math.cos(gravAngle) * influence;
                 totalGravityY += Math.sin(gravAngle) * influence;
 
-                graphics.lineStyle(2, 0xff0000, 1);
-                graphics.beginPath();
-                graphics.moveTo(point.x, point.y);
-                graphics.lineTo(plane.x, plane.y);
-                graphics.closePath();
-                graphics.strokePath();
+                if (debug) { 
+                    graphics.lineStyle(2, 0xff0000, 1);
+                    graphics.beginPath();
+                    graphics.moveTo(point.x, point.y);
+                    graphics.lineTo(plane.x, plane.y);
+                    graphics.closePath();
+                    graphics.strokePath();
+                }
                 
             });
             
