@@ -6,16 +6,20 @@ from aiogram.filters import Command
 from aiogram.types import Message, CallbackQuery
 
 from aiogram_tonconnect import ATCManager
-from aiogram_tonconnect.tonconnect.models import ConnectWalletCallbacks, SendTransactionCallbacks
-from aiogram_tonconnect.tonconnect.transactions import TONTransferTransaction
+from aiogram_tonconnect.tonconnect.models import (
+    ConnectWalletCallbacks,
+    SendTransactionCallbacks,
+)
 
 from .windows import (
     UserState,
     main_menu_window,
     select_language_window,
-    send_amount_ton_window,
+    send_start_voting_window,
     transaction_info_windows,
 )
+
+from .votes import Vote, VoteTransaction
 
 # Router Configuration
 router = Router()
@@ -91,15 +95,16 @@ async def main_menu_handler(call: CallbackQuery, atc_manager: ATCManager) -> Non
         # and the specified callbacks
         await atc_manager.connect_wallet(callbacks, check_proof=True)
 
-    elif call.data == "send_amount_ton":
-        await send_amount_ton_window(atc_manager)
+    elif call.data == "start_voting":
+        await send_start_voting_window(atc_manager)
+    #        await send_amount_ton_window(atc_manager)
 
     # Acknowledge the callback query
     await call.answer()
 
 
-@router.callback_query(UserState.send_amount_ton)
-async def send_amount_ton_handler(call: CallbackQuery, atc_manager: ATCManager, **data) -> None:
+@router.callback_query(UserState.vote)
+async def vote_handler(call: CallbackQuery, atc_manager: ATCManager, **data) -> None:
     """
     Handler for the send amount TON callback.
 
@@ -111,13 +116,30 @@ async def send_amount_ton_handler(call: CallbackQuery, atc_manager: ATCManager, 
     if call.data == "back":
         # Navigate back to the main menu
         await main_menu_window(atc_manager, **data)
+    else:
+        try:
+            vote = Vote(call.data)
+        except KeyError:
+            pass
+        else:
+            transaction = VoteTransaction(Vote(call.data))
+            callbacks = SendTransactionCallbacks(
+                before_callback=send_start_voting_window,
+                after_callback=transaction_info_windows,
+            )
+            await atc_manager.send_transaction(
+                callbacks=callbacks,
+                transaction=transaction,
+            )
 
     # Acknowledge the callback query
     await call.answer()
 
 
 @router.message(UserState.send_amount_ton)
-async def send_amount_ton_message_handler(message: Message, atc_manager: ATCManager) -> None:
+async def send_amount_ton_message_handler(
+    message: Message, atc_manager: ATCManager
+) -> None:
     """
     Handler for sending the TON amount.
 
@@ -130,7 +152,7 @@ async def send_amount_ton_message_handler(message: Message, atc_manager: ATCMana
         # Validate the entered amount as a float
         def validate_amount(amount: str) -> Union[float, None]:
             try:
-                amount = float(amount.replace(',', '.'))
+                amount = float(amount.replace(",", "."))
             except ValueError:
                 return None
             return amount
@@ -142,7 +164,7 @@ async def send_amount_ton_message_handler(message: Message, atc_manager: ATCMana
             transaction = TONTransferTransaction(
                 address=atc_manager.user.account_wallet.address.to_userfriendly(),
                 amount=amount_ton,
-                comment="Hello from @aiogramTONConnectBot!"
+                comment="Hello from @aiogramTONConnectBot!",
             )
             # Set up callbacks for the transaction
             callbacks = SendTransactionCallbacks(
@@ -160,7 +182,9 @@ async def send_amount_ton_message_handler(message: Message, atc_manager: ATCMana
 
 
 @router.callback_query(UserState.transaction_info)
-async def transaction_info_handler(call: CallbackQuery, atc_manager: ATCManager, **data) -> None:
+async def transaction_info_handler(
+    call: CallbackQuery, atc_manager: ATCManager, **data
+) -> None:
     """
     Handler for the transaction information callback.
 
