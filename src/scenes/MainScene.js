@@ -26,6 +26,8 @@ const maxPoints = 10;
 let planetGravity = 50;
 let delta = 1000;
 
+let defaultPlaneSpeed = 50;
+
 
 export class MainScene extends Scene
 {
@@ -74,6 +76,16 @@ export class MainScene extends Scene
     }
 
     update() {
+        if (previousPoints.length > 0) {
+
+            if (plane.y < targetPoint.y) {
+                // no new points - drift up
+                plane.setVelocity(0, -(defaultPlaneSpeed));
+                plane.angle = 0;
+            } else {
+                plane.rotateToVelocity();
+            }
+            
             debugText.setText([
                 `Plane Position: (${plane.x.toFixed(2)}, ${plane.y.toFixed(2)})`,
                 `Target Point: (${targetPoint.x.toFixed(2)}, ${targetPoint.y.toFixed(2)})`,
@@ -84,7 +96,8 @@ export class MainScene extends Scene
                 `Rotation: ${plane.rotation}`,
                 `TimeDiff: ${timeDiff}`,
                 `Price ${priceData?.price}` 
-            ]);        
+            ]);
+        }
     }
 
     setupEvents() {
@@ -112,7 +125,7 @@ export class MainScene extends Scene
         }
         // if (pointsCounter > 5) {
         //     return;
-        // }                
+        // }
         priceData = data;
         pointsCounter += 1;
         let y = timeToYCoordinate(data["ts"]);
