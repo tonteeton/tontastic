@@ -52,7 +52,7 @@ export class MainScene extends Scene
 
         this.setupPhysics();
 
-        this.bg = new Background(this);
+        this.bg = new Background(this, {"isDarkMode": isDarkMode()});
 
         plane = this.plane = new Plane(
             this,
@@ -107,7 +107,11 @@ export class MainScene extends Scene
                     `Speed: ${speed}`,
                     `Rotation: ${plane.rotation}`,
                     `TimeDiff: ${timeDiff}`,
-                    `Price ${priceData?.price}` 
+                    `Price: ${priceData?.price}`,
+                    `Dark mode: ${isDarkMode()}`,
+                    `${Telegram.WebApp.themeParams.bg_color}`,
+                    `${Telegram.WebApp.themeParams.secondary_bg_color}`,
+                    
                 ]);
             }
         }
@@ -220,7 +224,6 @@ export class MainScene extends Scene
 
 }
 
-
 function timeToYCoordinate(ts) {
     if (prevTime == undefined || previousPoint == undefined) {
         prevTime = ts;
@@ -231,4 +234,8 @@ function timeToYCoordinate(ts) {
     prevTime = ts;
 
     return previousPoint.y - y;
+}
+
+function isDarkMode() {
+    return Telegram.WebApp.colorScheme != "light";
 }

@@ -14,12 +14,20 @@ const factor = 2;
 var w = 450 * factor;
 var h = 800 * factor;
 
+
+let bgColor;
+if (typeof Telegram.WebApp.themeParams.bg_color !== 'undefined') {
+     bgColor = Telegram.WebApp.themeParams.bg_color;
+} else {
+    bgColor = '#00';
+}
+
 const config = {
     type: Phaser.AUTO,
     width: 1024,
     height: 768,
     parent: 'game-container',
-    backgroundColor: '#028af8',
+    backgroundColor: bgColor,
     type: Phaser.WEBGL,
     powerPreference:"high-performance",
     // transparent: true,
