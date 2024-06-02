@@ -46,6 +46,7 @@ export class Preloader extends Scene
         this.load.image("space", "space.webp");
         this.load.image("space02", "space02.webp");
         this.load.image("balloon", "balloon.webp");
+        this.load.image("boom", "tontastic_nobg.webp");
     }
 
     create ()

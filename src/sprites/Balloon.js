@@ -34,4 +34,35 @@ export class Balloon extends Phaser.Physics.Arcade.Sprite {
         }
     }
 
+     boom(price) {
+        let explosion = this.scene.add.sprite(this.x, this.y, "boom");
+        explosion.setScale(0);
+        explosion.setAlpha(1);
+        this.scene.tweens.add({
+            targets: explosion,
+            scale: { from: 0, to: 2 },
+            alpha: { from: 1, to: 0 },
+            duration: 1000,
+            onComplete: () => {
+                explosion.destroy();
+            }
+        });
+
+         let priceText = this.scene.add.text(this.x, this.y, price, { fontSize: '42px', fill: '#ffffff' });
+         
+         priceText.setOrigin(0.5);
+         this.scene.tweens.add({
+             targets: priceText,
+             y: this.y + 150, // Adjust the vertical position as needed
+             alpha: 0,
+             duration: 1000,  // Duration of the text animation
+             onComplete: () => {
+                 priceText.destroy();  // Destroy the text object after the tween
+             }
+         });
+
+         
+        this.destroy();
+    }
+
 }

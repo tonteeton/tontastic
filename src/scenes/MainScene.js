@@ -3,6 +3,8 @@ import { PriceFetcher } from "../PriceFetcher";
 import { Plane } from "../sprites/Plane";
 import { Balloon } from "../sprites/Balloon";
 import { Background } from "../Background";
+import { BulletsEffect } from "../effects/BulletsEffect.js";
+import { TrailEffect } from "../effects/TrailEffect.js";
 
 let debug = true;
 
@@ -65,6 +67,9 @@ export class MainScene extends Scene
             }
         );
         this.planeGroup.add(plane);
+
+        new BulletsEffect(this, plane);
+        new TrailEffect(this, plane);
 
         const cam =  this.cameras.main;
         cam.startFollow(plane, true, 1, 1);
@@ -216,7 +221,7 @@ export class MainScene extends Scene
     handleBallonPlaced(obj) {
         this.physics.add.collider(
             plane, obj, (plane, balloon) => {
-                balloon.destroy();
+                balloon.boom(priceData?.price);
             }
         );
     }
