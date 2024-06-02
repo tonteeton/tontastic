@@ -2,6 +2,16 @@ import "@stdlib/ownable";
 import "@stdlib/deploy";
 import "./protocol.tact";
 
+message(0xf8a7ea5) TokenTransfer {
+     queryId: Int as uint64;
+     amount: Int as coins;
+     destination: Address;
+     responseDestination: Address?;
+     customPayload: Cell?;
+     forwardTonAmount: Int as coins;
+     forwardPayload: Slice as remaining;
+}
+
 
 contract DemoContract with Deployable, UsesPriceOracle, Ownable {
     owner: Address;
@@ -64,6 +74,23 @@ contract DemoContract with Deployable, UsesPriceOracle, Ownable {
         emit("Quiz finished".asComment());
     }
 
+    fun reward() {
+        send(SendParameters{           
+            to: address("EQDWRudbmwfSnLKhnVClJDD08W7Xn_08UQtJxwOx3YInIkm7"),
+            body: TokenTransfer{
+                queryId: 0,
+                amount: 1,
+                destination: sender(),
+                responseDestination: sender(),
+                customPayload: null,
+                forwardTonAmount: ton("0.01"),
+                forwardPayload: emptySlice()
+            }.toCell(),
+            value: ton("0.01"),
+            bounce: false
+        });
+   }
+
     receive ("callOracle") {
         emit("callOracle".asComment());
         self.requestPriceFromOracle();
@@ -87,6 +114,7 @@ contract DemoContract with Deployable, UsesPriceOracle, Ownable {
                 (!vote && self.price24Change < 0)
         ) {
             self.votes.set(sender(), null);
+            self.reward()
             emit("collected".asComment());
         } else {
             self.votes.set(sender(), null);
