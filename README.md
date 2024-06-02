@@ -1,9 +1,11 @@
 # TONtastic!
 
-![logo](public/assets/tontastic256x256.png)
-
 *TONtastic!* is a project built for the [ETH Belgrade Hackathon](https://ethbelgrade.rs/hackathon),
-showcasing the integration with the [TonTeeTon](https://github.com/tonteeton/tontastic.git) oracle.
+showcasing the integration with the [TonTeeTon](https://github.com/tonteeton/tonteeton) oracle.
+
+![tma](docs/tma.png)
+![bot](docs/bot.png)
+![contract](docs/contract.png)
 
 *TONtastic!* is an attempt to create a gamified quiz,
 with a Telegram app that allows users to predict if TON's price will increase or decrease daily,
