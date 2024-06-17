@@ -1,141 +1,133 @@
-import "@stdlib/ownable";
 import "@stdlib/deploy";
-import "./protocol.tact";
+import "@stdlib/ownable";
+import "./oracleProtocol.tact";
+import "./messages.tact";
 
-message(0xf8a7ea5) TokenTransfer {
-     queryId: Int as uint64;
-     amount: Int as coins;
-     destination: Address;
-     responseDestination: Address?;
-     customPayload: Cell?;
-     forwardTonAmount: Int as coins;
-     forwardPayload: Slice as remaining;
-}
-
-
-contract DemoContract with Deployable, UsesPriceOracle, Ownable {
+contract DemoContract with Deployable, Ownable, UsesPriceOracle {
     owner: Address;
-    votes: map<Address, Bool>; // true - UP, false - DOWN
 
     priceOracleAddress : Address;
-
-    startDate: Int as uint64;
-    finishDate: Int as uint64;
-    isStarted: Bool;
-    price24Change: Int as int64;
+    tasticJettonWallet: Address;
+    jettonTransferCount: Int as uint64;
 
     init(priceOracleAddress: Address) {
         self.owner = sender();
         self.priceOracleAddress = priceOracleAddress;
-        self.startDate = 0;
-        self.finishDate = 0;
-        self.isStarted = false;
-        self.price24Change = 0;
+        self.tasticJettonWallet = myAddress();
+        self.jettonTransferCount = 0;
     }
 
-    override fun requestPriceFromOracle() {
-        send(SendParameters{
-            to: self.priceOracleAddress,
-            body: OraclePriceRequest{
-                queryID: 1,
-                ticker: self.TICKER_TON,
-                minUpdatedAt: now() - 3600 // Price must be no older than 1 hour.
-            }.toCell(),
-            value: ton("0.01"),
-            mode: SendRemainingValue | SendIgnoreErrors,
-            bounce: false
-        });
-        emit("Price request sended to oracle".asComment());
-    }
-
-    override fun receivedOraclePriceResponse(msg: OraclePriceResponse) {
-        require(sender() == self.priceOracleAddress, "Oracle sender required");
-        if (!self.isStarted) {
-            self.startQuiz(msg.usd);
-        } else {
-            self.finishQuiz(msg.usd);
-        }
-    }
-
-    override fun receivedOraclePriceScheduledResponse(msg: OraclePriceScheduledResponse) {
-        emit("Oracle price is outdated".asComment());
-    }
-
-
-    fun startQuiz(price: Int) {
-        self.price24Change = 0;
-        self.isStarted = true;
-    }
-
-    fun finishQuiz(price24Change: Int) {
-        self.price24Change = price24Change;
-        self.finishDate = now();
-        self.isStarted = false;
-        emit("Quiz finished".asComment());
-    }
-
-    fun reward() {
-        send(SendParameters{           
-            to: address("EQDWRudbmwfSnLKhnVClJDD08W7Xn_08UQtJxwOx3YInIkm7"),
-            body: TokenTransfer{
-                queryId: 0,
-                amount: 1,
-                destination: sender(),
-                responseDestination: sender(),
-                customPayload: null,
-                forwardTonAmount: ton("0.01"),
-                forwardPayload: emptySlice()
-            }.toCell(),
-            value: ton("0.01"),
-            bounce: false
-        });
-   }
-
-    receive ("callOracle") {
-        emit("callOracle".asComment());
-        self.requestPriceFromOracle();
+    // Set the Jetton wallet address for this contract.
+    receive (msg: SetupMessage) {
+        self.requireOwner();
+        self.tasticJettonWallet = msg.tasticAddress;
     }
 
     receive ("vote_up") {
-        self.votes.set(sender(), true);
-        self.reply("Vote for price UP today".asComment());
+        self.vote(1);
     }
 
     receive ("vote_down") {
-        self.votes.set(sender(), false);
-        self.reply("Vote for price DOWN today".asComment());
+        self.vote(-1);
     }
 
-    receive ("collect") {
-        require(self.votes.get(sender()) != null, "No vote");
-        let vote : Bool = self.votes.get(sender())!!;
-        if (
-            (vote && self.price24Change > 0) ||
-                (!vote && self.price24Change < 0)
-        ) {
-            self.votes.set(sender(), null);
-            self.reward()
-            emit("collected".asComment());
-        } else {
-            self.votes.set(sender(), null);
-            emit("wrong answer".asComment());
-        }
-    }
-
-    receive ("startQuiz") {
+    receive ("withdrawBalance") {
         self.requireOwner();
-        self.votes = emptyMap();
-        self.requestPriceFromOracle();
-        emit("startQuiz".asComment());
+        send(SendParameters{
+            to: self.owner,
+            bounce: true,
+            value: 0,
+            mode: SendRemainingBalance + SendIgnoreErrors
+        });
     }
 
-    receive ("finishQuiz") {
-        self.requireOwner();
-        emit("finishQuiz".asComment());
-        self.requestPriceFromOracle();
+    receive (msg: TokenExcesses) {
     }
 
     receive (text: String) {
     }
 
+    fun vote(value: Int) {
+        send(SendParameters{
+            to: self.priceOracleAddress,
+            value: 0,
+            mode: SendRemainingValue,
+            bounce: false,
+            body: OraclePriceRequest{
+                queryId: 1,
+                // User vote is sent as payload
+                customPayload: Vote{
+                    sender: sender(),
+                    value: value,
+                }.toCell(),
+                ticker: self.TICKER_TON,
+                minUpdatedAt: now() - 18000, // Price must be no older than 5 hours.
+            }.toCell(),
+        });
+    }
+
+    // Handle response from the oracle containing price data.
+    override fun receivedOraclePriceResponse(msg: OraclePriceResponse) {
+        let vote : Vote = self.parseVote(msg.payload!!);
+        if ((msg.usd24change >= 0 && vote.value > 0) || (msg.usd24change <= 0 && vote.value < 0)) {
+            self.sendTastic(vote.sender, ton("1"), "TONtastic!");
+        } else {
+            self.sendText(vote.sender, "Nope");
+        }
+    }
+
+    // Handle scheduled response from the oracle indicating outdated price data.
+    override fun receivedOraclePriceScheduledResponse(msg: OraclePriceScheduledResponse) {
+        let vote : Vote = self.parseVote(msg.payload!!);
+        // The price is currently unknown. Let's reward the User with half a TASTIC.
+        self.sendTastic(vote.sender, ton("0.5"), "¯\\_(ツ)_/¯");
+    }
+
+    fun parseVote(cell: Cell): Vote {
+        let payload: Slice = cell.beginParse();
+        return Vote{
+            sender: payload.loadAddress(),
+            value: payload.loadInt(8),
+        };
+    }
+
+    fun sendText(to: Address, text: String) {
+        send(SendParameters{
+            to: to,
+            value: 0,
+            mode: SendRemainingValue | SendIgnoreErrors,
+            bounce: false,
+            body: text.asComment(),
+        });
+    }
+
+    fun sendTastic(to: Address, amount: Int, comment: String) {
+        self.jettonTransferCount += 1;
+        let queryId: Int = self.jettonTransferCount;
+
+        // Comment for the Jetton Notify transaction.
+        let payload: Slice =
+            beginCell().
+            storeUint(0, 32). // 0x0 - text comment
+            storeUint(0, 1).  // 0x0 - text is stored in this cell
+            storeSlice(comment.asSlice()).
+            endCell().
+            asSlice();
+
+        send(SendParameters{
+            to: self.tasticJettonWallet,
+            value: 0,
+            mode: SendRemainingValue,
+            bounce: false,
+            body: TokenTransfer{
+                queryId: queryId,
+                amount: amount, // TASTIC amount
+                destination: to,
+                responseDestination: to, // return remaining coins to User
+                customPayload: null,
+                forwardTonAmount: 1,
+                forwardPayload: payload,
+            }.toCell(),
+        });
+    }
 }
