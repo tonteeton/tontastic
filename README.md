@@ -7,10 +7,7 @@ showcasing the integration with the [TonTeeTon](https://github.com/tonteeton/ton
 ![bot](docs/bot.png)
 ![contract](docs/contract.png)
 
-*TONtastic!* is an attempt to create a gamified quiz,
-with a Telegram app that allows users to predict if TON's price will increase or decrease daily,
-awarding correct predictions with Jettons.
-It's designed to drive engagement, rewarding users without requiring them to stake anything.
+*TONtastic!* is a gamified Telegram quiz app where users vote on whether the TON to USD rate has increased or decreased in the last 24 hours. Correct answers earn users TON Jettons as rewards, promoting engagement without requiring any staking.
 
 The Telegram bot is available at https://t.me/TONtasticBot .
 
@@ -18,9 +15,7 @@ The Telegram bot is available at https://t.me/TONtasticBot .
 
 ### Quiz contract
 
-The [Contract](contracts/contract.tact) allows the owner to start a new quiz,
-and users to make a vote and claim a reward.
-On completion, the TonTeeTon `get-simple-price` contract is called to request the 24h price change.
+The [Contract](contracts/contract.tact) allows users to receive *TONtastic!* rewards for correctly answering the quiz question: "Has the TON to USD rate increased in the last 24 hours?" Upon voting UP or DOWN, the contract interacts with the TonTeeTon [get-simple-price](https://github.com/tonteeton/tonteeton/blob/main/enclaves/get-simple-price/contracts/contract.tact) contract to request the current TON price.
 
 ### Telegram bot
 
@@ -28,7 +23,8 @@ The [Bot](bot/) utilizes [TON Connect](https://docs.ton.org/develop/dapps/ton-co
 allow users to make votes via an existing Telegram wallet.
 
 ### Telegram Mini App
-The [TMA](src/) was created to allow users to monitor the current TON price change.
+
+The [TMA](src/) allows users to monitor the current TON price change in real-time, utilizing the Bybit API.
 
 
 ## Templates used
