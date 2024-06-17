@@ -128,9 +128,9 @@ async def send_start_voting_window(atc_manager: ATCManager, **_) -> None:
     """
     # Determine text based on user language
     text = (
-        "📈 Вырастет ли цена TON к USD сегодня?"
+        "📈 Как вы считаете, курс TON к USD увеличился за последние 24 часа?"
         if atc_manager.user.language_code == "ru"
-        else "📈 Will the TON to USD exchange rate increase today?"
+        else "📈 How do you think, has the TON to USD rate increased in the last 24 hours?"
     )
     button_text = "‹ Назад" if atc_manager.user.language_code == "ru" else "‹ Back"
     reply_markup = Markup(
@@ -159,7 +159,7 @@ async def transaction_info_windows(atc_manager: ATCManager, boc: str, **_) -> No
     """
     # Determine text based on user's language and show transaction details
     text = (
-        "Голос успешно отправлена!\n\n"
+        "Голос успешно отправлен!\n\n"
         if atc_manager.user.language_code == "ru"
         else "Vote successfully sent!\n\n"
     )

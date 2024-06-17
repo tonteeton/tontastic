@@ -9,7 +9,7 @@ class Vote(str, Enum):
     DOWN = "vote_down"
 
 
-VOTE_TRANSACTION_COST = 0.05
+VOTE_TRANSACTION_COST = 0.1
 
 
 class VoteTransaction(TONTransferTransaction):
