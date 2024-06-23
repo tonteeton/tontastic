@@ -1,6 +1,7 @@
 import os
 
 from aiogram import Bot, Dispatcher
+from aiogram.client.default import DefaultBotProperties
 from aiogram.fsm.storage.redis import RedisStorage
 from aiogram_tonconnect.handlers import AiogramTonConnectHandlers
 from aiogram_tonconnect.middleware import AiogramTonConnectMiddleware
@@ -14,13 +15,16 @@ from .throttling import ThrottlingMiddleware
 BOT_TOKEN = "1234567890:QWERTYUIOPASDFGHJKLZXCVBNM"
 REDIS_DSN = "redis://localhost:6379/0"
 MANIFEST_URL = os.environ.get("MANIFEST_URL")
-EXCLUDE_WALLETS = ["telegram-wallet", "tonhub"]
+EXCLUDE_WALLETS = []
 
 
 async def main():
     storage = RedisStorage.from_url(os.environ.get("REDIS_DSN", REDIS_DSN))
     # Creating a bot object with the token and HTML parsing mode
-    bot = Bot(os.environ.get("BOT_TOKEN", BOT_TOKEN), parse_mode="HTML")
+    bot = Bot(
+        os.environ.get("BOT_TOKEN", BOT_TOKEN),
+        default=DefaultBotProperties(parse_mode="HTML"),
+    )
 
     await bot.delete_webhook()
 
