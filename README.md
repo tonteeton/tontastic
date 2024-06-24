@@ -20,7 +20,7 @@ The [Contract](contracts/contract.tact) allows users to receive *TONtastic!* rew
 ### Telegram bot
 
 The [Bot](bot/) utilizes [TON Connect](https://docs.ton.org/develop/dapps/ton-connect/overview) to
-allow users to make votes via an existing Telegram wallet.
+allow users to make votes via an existing TON wallet.
 
 ### Telegram Mini App
 

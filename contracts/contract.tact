@@ -83,6 +83,16 @@ contract DemoContract with Deployable, Ownable, UsesPriceOracle {
         self.sendTastic(vote.sender, ton("0.5"), "¯\\_(ツ)_/¯");
     }
 
+    // Handle response from the oracle indicating a new address.
+    // Saves the new oracle address.
+    override fun receivedOracleNewAddressResponse(msg: OracleNewAddressResponse) {
+        let sb: StringBuilder = beginString();
+        sb.append("Oracle contract moved to: ");
+        sb.append(msg.newAddress.toString());
+        emit(sb.toString().asComment());
+        self.priceOracleAddress = msg.newAddress;
+    }
+
     fun parseVote(cell: Cell): Vote {
         let payload: Slice = cell.beginParse();
         return Vote{
