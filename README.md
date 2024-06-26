@@ -35,12 +35,16 @@ The [TMA](src/) allows users to monitor the current TON price change in real-tim
 
 ## Development Setup
 
-1. Clone the repository
+1. Clone the repository and navigate to the project directory:
 ```bash
 git clone https://github.com/tonteeton/tontastic.git
+cd tontastic
 ```
 
-2. Start the dev server
+2. Create a .env file based on env.example.
+
+3. Start the dev server:
+
 ```bash
 docker-compose up
 ```
