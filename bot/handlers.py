@@ -16,6 +16,7 @@ from .windows import (
     main_menu_window,
     select_language_window,
     send_start_voting_window,
+    send_privacy_window,
     transaction_info_windows,
 )
 
@@ -199,3 +200,15 @@ async def transaction_info_handler(
 
     # Acknowledge the callback query
     await call.answer()
+
+
+@router.message(Command("privacy"))
+async def proivacy_command_handler(message: Message, atc_manager: ATCManager) -> None:
+    """
+    Handler for the /privacy command.
+
+    :param message: The Message object representing the incoming command.
+    :param atc_manager: ATCManager instance for managing TON Connect integration.
+    :return: None
+    """
+    await send_privacy_window(message)

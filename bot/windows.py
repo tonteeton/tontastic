@@ -1,5 +1,5 @@
 from aiogram.fsm.state import StatesGroup, State
-from aiogram.types import User
+from aiogram.types import Message, User
 from aiogram.types import InlineKeyboardButton as Button
 from aiogram.types import InlineKeyboardMarkup as Markup
 from aiogram.utils import markdown
@@ -173,3 +173,35 @@ async def transaction_info_windows(atc_manager: ATCManager, boc: str, **_) -> No
     # Send the message and update user state
     await atc_manager._send_message(text, reply_markup=reply_markup)
     await atc_manager.state.set_state(UserState.transaction_info)
+
+
+async def send_privacy_window(message: Message) -> None:
+    """
+    Displays the window for privacy policy.
+
+    :param message: The Message object representing the incoming command.
+    :return: None
+    """
+    text = """
+    *Privacy Policy*
+
+    Our application is intended for use as-is, with no warranty of any kind.
+
+    *Information Collection and Use*
+    We do not collect, use, or share any personal information
+    while you use our application.
+
+    *Open Source*
+    The source code for the application is available for review at
+    [https://github.com/tonteeton/tontastic](https://github.com/tonteeton/tontastic).
+
+    *Changes to This Privacy Policy*
+    We may update our Privacy Policy from time to time.
+    Thus, you are advised to review this page periodically for any changes.
+
+    *Contact Us*
+    If you have any questions or suggestions about our Application and Privacy Policy,
+    do not hesitate to open an issue at
+    [https://github.com/tonteeton/tontastic/issues](https://github.com/tonteeton/tontastic/issues).
+    """
+    await message.reply(text=text, parse_mode="Markdown")
